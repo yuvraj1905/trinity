@@ -3,14 +3,17 @@ import AddIcon from '@mui/icons-material/Add';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen }) => {
   const navigate = useNavigate();
   const { chatHistory } = useSelector(state => state.chat);
+  const { isAuthenticated } = useSelector(state => state.auth);
+
+  if (!isAuthenticated) return null;
 
   return (
     <Box
       sx={{
-        width: 250,
+        width: isOpen ? 250 : 0,
         flexShrink: 0,
         borderRight: 1,
         borderColor: 'divider',
@@ -20,7 +23,9 @@ const Sidebar = () => {
         top: 64,
         backgroundColor: 'background.paper',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        transition: 'width 0.2s ease-in-out',
+        overflow: 'hidden',
       }}
     >
       <Button

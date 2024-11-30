@@ -1,20 +1,55 @@
-import { AppBar, Toolbar, Button, Box, IconButton } from '@mui/material';
+import { AppBar, Toolbar, Button, Box, IconButton, Typography } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import MenuIcon from '@mui/icons-material/Menu';
 import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
-const Navbar = ({ toggleTheme }) => {
+const Navbar = ({ toggleTheme, isOpen, toggleSidebar }) => {
   const { isAuthenticated } = useSelector(state => state.auth);
   const theme = useTheme();
 
   return (
     <AppBar position="fixed" color="inherit" elevation={0}>
       <Toolbar>
-        <Link to="/">
-          <img src="/logo.jpg" alt="Logo" height="32"/>
-        </Link>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {isAuthenticated && (
+            <IconButton
+              onClick={toggleSidebar}
+              sx={{
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 1,
+                width: 32,
+                height: 32,
+                '&:hover': {
+                  bgcolor: 'background.paper',
+                }
+              }}
+              size="small"
+            >
+              <MenuIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          )}
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontFamily: 'Orbitron, sans-serif',
+                background: theme.palette.mode === 'dark' 
+                  ? 'linear-gradient(90deg, #fff 0%, #ccc 100%)'
+                  : 'linear-gradient(90deg, #1a1a1a 0%, #4a4a4a 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 600,
+                letterSpacing: '0.5px'
+              }}
+            >
+              TRINITY
+            </Typography>
+          </Link>
+        </Box>
         <Box sx={{ flexGrow: 1 }} />
         <IconButton onClick={toggleTheme} sx={{ mr: 2 }}>
           {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}

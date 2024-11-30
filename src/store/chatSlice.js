@@ -5,7 +5,15 @@ export const sendMessage = createAsyncThunk(
   'chat/sendMessage',
   async (message, { rejectWithValue }) => {
     try {
-      return await chatService.sendMessage(message);
+      if (typeof message === 'object' && message.type === 'file') {
+        return await chatService.sendMessage({
+          type: 'file',
+          content: message.content,
+          fileName: message.fileName,
+          fileType: message.fileType
+        });
+      }
+      return await chatService.sendMessage({ type: 'text', content: message });
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -17,6 +25,17 @@ export const fetchChatHistory = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       return await chatService.getChatHistory();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const sendChatMessage = createAsyncThunk(
+  'chat/sendChatMessage',
+  async ({ message, followUp = null }, { rejectWithValue }) => {
+    try {
+      return await chatService.sendChatMessage(message, followUp);
     } catch (error) {
       return rejectWithValue(error.message);
     }
