@@ -1,4 +1,4 @@
-import { AppBar, Toolbar, Button, Box, IconButton, Typography } from '@mui/material';
+import { AppBar, Toolbar, Button, Box, IconButton, Typography, Avatar } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -7,7 +7,7 @@ import { useTheme } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
 const Navbar = ({ toggleTheme, isOpen, toggleSidebar }) => {
-  const { isAuthenticated } = useSelector(state => state.auth);
+  const { isAuthenticated, user } = useSelector(state => state.auth);
   const theme = useTheme();
 
   return (
@@ -54,7 +54,31 @@ const Navbar = ({ toggleTheme, isOpen, toggleSidebar }) => {
         <IconButton onClick={toggleTheme} sx={{ mr: 2 }}>
           {theme.palette.mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
         </IconButton>
-        {!isAuthenticated ? (
+        {isAuthenticated ? (
+          <IconButton 
+            component={Link} 
+            to="/profile"
+            sx={{ 
+              ml: 1,
+              p: 0,
+              '&:hover': {
+                bgcolor: 'transparent',
+              }
+            }}
+          >
+            <Avatar 
+              sx={{ 
+                width: 28, 
+                height: 28,
+                bgcolor: theme.palette.primary.main,
+                fontSize: '0.875rem',
+                fontWeight: 500
+              }}
+            >
+              {user?.name?.[0]?.toUpperCase() || 'U'}
+            </Avatar>
+          </IconButton>
+        ) : (
           <>
             <Button component={Link} to="/signin" color="inherit">
               Sign In
@@ -69,10 +93,6 @@ const Navbar = ({ toggleTheme, isOpen, toggleSidebar }) => {
               Sign Up
             </Button>
           </>
-        ) : (
-          <Button component={Link} to="/profile" color="inherit">
-            Profile
-          </Button>
         )}
       </Toolbar>
     </AppBar>

@@ -20,7 +20,9 @@
     "react-scripts": "5.0.1",
     "styled-components": "^5.3.10",
     "web-vitals": "^2.1.4",
-    "react-syntax-highlighter": "^15.5.0"
+    "react-syntax-highlighter": "^15.5.0",
+    "@cloudinary/url-gen": "^1.x.x",
+    "cloudinary-react": "^1.x.x"
   },
   "scripts": {
     "start": "react-scripts start",

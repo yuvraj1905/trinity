@@ -1,30 +1,34 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { chatService } from '../services/chat';
 
-export const sendMessage = createAsyncThunk(
-  'chat/sendMessage',
-  async (message, { rejectWithValue }) => {
+export const createConversation = createAsyncThunk(
+  'chat/createConversation',
+  async (_, { rejectWithValue }) => {
     try {
-      if (typeof message === 'object' && message.type === 'file') {
-        return await chatService.sendMessage({
-          type: 'file',
-          content: message.content,
-          fileName: message.fileName,
-          fileType: message.fileType
-        });
-      }
-      return await chatService.sendMessage({ type: 'text', content: message });
+      const response = await chatService.createConversation();
+      return response;
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-export const fetchChatHistory = createAsyncThunk(
-  'chat/fetchHistory',
+export const fetchConversations = createAsyncThunk(
+  'chat/fetchConversations',
   async (_, { rejectWithValue }) => {
     try {
-      return await chatService.getChatHistory();
+      return await chatService.getConversations();
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const fetchConversation = createAsyncThunk(
+  'chat/fetchConversation',
+  async (conversationId, { rejectWithValue }) => {
+    try {
+      return await chatService.getConversation(conversationId);
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -33,9 +37,41 @@ export const fetchChatHistory = createAsyncThunk(
 
 export const sendChatMessage = createAsyncThunk(
   'chat/sendChatMessage',
-  async ({ message, followUp = null }, { rejectWithValue }) => {
+  async ({ message, followUp = null, file = null, conversationId = null }, { rejectWithValue }) => {
     try {
-      return await chatService.sendChatMessage(message, followUp);
+      return await chatService.sendChatMessage(message, followUp, file, conversationId);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const sendStreamingChatMessage = createAsyncThunk(
+  'chat/sendStreamingChatMessage',
+  async ({ message, followUp = null, file = null, conversationId = null }, { rejectWithValue }) => {
+    try {
+      let fileUrl = null;
+      let imageUrl = null;
+
+      if (file) {
+        const uploadedUrl = await chatService.uploadToCloudinary(file);
+        if (file.type.startsWith('image/')) {
+          imageUrl = uploadedUrl;
+        } else {
+          fileUrl = uploadedUrl;
+        }
+      }
+
+      const stream = await chatService.sendStreamingChatMessage(
+        message,
+        followUp,
+        file,
+        imageUrl,
+        fileUrl,
+        conversationId
+      );
+      
+      return { stream, message };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -45,29 +81,38 @@ export const sendChatMessage = createAsyncThunk(
 const chatSlice = createSlice({
   name: 'chat',
   initialState: {
-    chatHistory: [],
-    currentChat: null,
+    conversations: [],
+    currentConversation: null,
     loading: false,
     error: null,
   },
   reducers: {
-    setChatHistory: (state, action) => {
-      state.chatHistory = action.payload;
-    },
-    addChat: (state, action) => {
-      state.chatHistory.unshift(action.payload);
-    },
-    setCurrentChat: (state, action) => {
-      state.currentChat = action.payload;
-    },
-    setLoading: (state, action) => {
-      state.loading = action.payload;
-    },
-    setError: (state, action) => {
-      state.error = action.payload;
-    },
+    clearConversations: (state) => {
+      state.conversations = [];
+      state.currentConversation = null;
+    }
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchConversations.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchConversations.fulfilled, (state, action) => {
+        state.conversations = Array.isArray(action.payload) ? action.payload : [];
+        state.loading = false;
+      })
+      .addCase(fetchConversations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+        state.conversations = [];
+      })
+      .addCase(createConversation.fulfilled, (state, action) => {
+        state.currentConversation = action.payload;
+        state.conversations = [action.payload, ...state.conversations];
+      });
+  }
 });
 
-export const { setChatHistory, addChat, setCurrentChat, setLoading, setError } = chatSlice.actions;
+export const { clearConversations } = chatSlice.actions;
 export default chatSlice.reducer;
