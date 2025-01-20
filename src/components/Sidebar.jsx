@@ -19,11 +19,11 @@ const formatConversationPreview = (conversation) => {
   if (!conversation.queries || conversation.queries.length === 0) {
     return 'New Conversation';
   }
-  const lastQuery = conversation.queries[conversation.queries.length - 1];
+  const lastQuery = conversation.queries[0];
   return lastQuery.query || 'New Conversation';
 };
 
-const groupConversationsByDate = (conversations) => {
+export const groupConversationsByDate = (conversations) => {
   // First sort conversations by date (most recent first)
   const sortedConversations = [...conversations].sort((a, b) => 
     new Date(b.created_at) - new Date(a.created_at)
@@ -75,6 +75,7 @@ const Sidebar = ({ isOpen }) => {
     try {
       const result = await dispatch(createConversation()).unwrap();
       navigate(`/chat/${result.id}`);
+      dispatch(fetchConversations());
     } catch (error) {
       console.error('Failed to create new conversation:', error);
     }
@@ -174,8 +175,9 @@ const Sidebar = ({ isOpen }) => {
             <CircularProgress size={24} />
           </Box>
         ) : (
-          Object.entries(groupedConversations).map(([date, dateConversations]) => (
+          Object.entries(groupedConversations).map(([date, dateConversations],index) => (
             <Box key={date}>
+              {dateConversations?.filter(({queries})=>queries?.length>=1)?.length>=1&&
               <Typography
                 variant="caption"
                 sx={{
@@ -183,12 +185,14 @@ const Sidebar = ({ isOpen }) => {
                   py: 1,
                   display: 'block',
                   color: 'text.secondary',
-                  fontWeight: 500,
+                  fontWeight: 600,
+                  fontSize:14,
+                  marginTop:index===0?"":"20px"
                 }}
               >
                 {date}
-              </Typography>
-              {dateConversations.map((conversation) => (
+              </Typography>}
+              {dateConversations?.filter(({queries})=>queries?.length>=1).map((conversation) => (
                 <ListItem
                   key={conversation.id}
                   button
@@ -196,6 +200,10 @@ const Sidebar = ({ isOpen }) => {
                   className={conversation.id === currentConversationId ? 'selected' : ''}
                   sx={{
                     minHeight: '44px',
+                    borderRadius:"0px 0px 0px 4px !important",
+                    borderLeft:"0.5px solid grey",
+                    borderBottom:"0.5px solid grey",
+                    marginBottom:"10px !important"
                   }}
                 >
                   <ListItemText
