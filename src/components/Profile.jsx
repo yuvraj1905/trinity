@@ -8,6 +8,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import EmailIcon from '@mui/icons-material/Email';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { useTheme } from '@mui/material/styles';
+import { queries } from '@testing-library/react';
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -33,6 +34,14 @@ const Profile = () => {
       </Box>
     </Box>
   );
+
+  
+  const { conversations, loading, error } = useSelector(state => state.chat);
+  const totalConversations=conversations?.filter(({queries})=>queries?.length>=1)
+  let totalQueriesCount=0;
+  totalConversations?.forEach(({queries})=>{
+    totalQueriesCount=totalQueriesCount+Number(queries?.length)
+  })
 
   return (
     <Box sx={{ 
@@ -68,14 +77,14 @@ const Profile = () => {
               {user?.name?.[0]?.toUpperCase() || 'U'}
             </Avatar>
             
-            <Button
+            {/* <Button
               variant="outlined"
               startIcon={<EditIcon />}
               sx={{ mt: 2 }}
               size="small"
             >
               Change Photo
-            </Button>
+            </Button> */}
           </Grid>
 
           {/* Right Column - User Info */}
@@ -123,6 +132,7 @@ const Profile = () => {
                 Account Statistics
               </Typography>
               <Grid container spacing={2} sx={{ mt: 1 }}>
+                
                 <Grid item xs={6} md={4}>
                   <Paper 
                     elevation={0}
@@ -135,29 +145,30 @@ const Profile = () => {
                     }}
                   >
                     <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                      0
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      APIs Generated
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={6} md={4}>
-                  <Paper 
-                    elevation={0}
-                    sx={{ 
-                      p: 2, 
-                      textAlign: 'center',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
-                      0
+                      {totalConversations?.length||0}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Conversations
+                    </Typography>
+                  </Paper>
+                </Grid>
+
+                <Grid item xs={6} md={4}>
+                  <Paper 
+                    elevation={0}
+                    sx={{ 
+                      p: 2, 
+                      textAlign: 'center',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Typography variant="h4" color="primary" sx={{ fontWeight: 600 }}>
+                      {totalQueriesCount}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Queries Count
                     </Typography>
                   </Paper>
                 </Grid>
